@@ -1,4 +1,4 @@
-package conservservice
+package retentionservice
 
 import (
 	"net/rpc"
@@ -6,25 +6,54 @@ import (
 	"github.com/hashicorp/go-plugin"
 )
 
-//
+//inputs and outputs of the functions
 
-type DataToStore struct {
-	Id      string
-	Content string
+type StoreRequest struct {
+	Id       string
+	FileName string
+	MetaData string
+	Payload  []byte
+	Hash     string
+}
+
+type StoreResponse struct {
+	Id    string
+	Error int
+}
+
+type StatusRequest struct {
+	Id string
+}
+
+type StatusResponse struct {
+	Status string
+	Error  int
+}
+
+type SearchRequest struct {
+	Id       string
+	FileName string
+	MetaData string
+}
+
+type SearchResponse struct {
+	Payload []byte
+	Hash    string
+	Error   int
 }
 
 //interface
 
-type ConservService interface {
-	Store(data DataToStore) string
-	Status() string
-	Search() string
+type RetentionService interface {
+	Store(data StoreRequest) StoreResponse
+	Status(request StatusRequest) StatusResponse
+	Search(query SearchRequest) SearchResponse
 }
 
-type ConservServiceRPC struct{ client *rpc.Client }
+type RetentionServiceRPC struct{ client *rpc.Client }
 
-func (e *ConservServiceRPC) Store(data DataToStore) string {
-	var response string
+func (e *RetentionServiceRPC) Store(data StoreRequest) StoreResponse {
+	var response StoreResponse
 
 	err := e.client.Call("Plugin.Store", data, &response)
 	if err != nil {
@@ -34,10 +63,10 @@ func (e *ConservServiceRPC) Store(data DataToStore) string {
 	return response
 }
 
-func (e *ConservServiceRPC) Status() string {
-	var response string
+func (e *RetentionServiceRPC) Status(request StatusRequest) StatusResponse {
+	var response StatusResponse
 
-	err := e.client.Call("Plugin.Status", new(interface{}), &response)
+	err := e.client.Call("Plugin.Status", request, &response)
 	if err != nil {
 		panic(err)
 	}
@@ -45,10 +74,10 @@ func (e *ConservServiceRPC) Status() string {
 	return response
 }
 
-func (e *ConservServiceRPC) Search() string {
-	var response string
+func (e *RetentionServiceRPC) Search(query SearchRequest) SearchResponse {
+	var response SearchResponse
 
-	err := e.client.Call("Plugin.Search", new(interface{}), &response)
+	err := e.client.Call("Plugin.Search", query, &response)
 	if err != nil {
 		panic(err)
 	}
@@ -56,33 +85,33 @@ func (e *ConservServiceRPC) Search() string {
 	return response
 }
 
-type ConservServiceRPCServer struct {
-	Impl ConservService
+type RetentionServiceRPCServer struct {
+	Impl RetentionService
 }
 
-func (s *ConservServiceRPCServer) Store(data DataToStore, response *string) error {
+func (s *RetentionServiceRPCServer) Store(data StoreRequest, response *StoreResponse) error {
 	*response = s.Impl.Store(data)
 	return nil
 }
 
-func (s *ConservServiceRPCServer) Status(args interface{}, response *string) error {
-	*response = s.Impl.Status()
+func (s *RetentionServiceRPCServer) Status(request StatusRequest, response *StatusResponse) error {
+	*response = s.Impl.Status(request)
 	return nil
 }
 
-func (s *ConservServiceRPCServer) Search(args interface{}, response *string) error {
-	*response = s.Impl.Search()
+func (s *RetentionServiceRPCServer) Search(query SearchRequest, response *SearchResponse) error {
+	*response = s.Impl.Search(query)
 	return nil
 }
 
-type ConservServicePlugin struct {
-	Impl ConservService
+type RetentionServicePlugin struct {
+	Impl RetentionService
 }
 
-func (p *ConservServicePlugin) Server(*plugin.MuxBroker) (interface{}, error) {
-	return &ConservServiceRPCServer{Impl: p.Impl}, nil
+func (p *RetentionServicePlugin) Server(*plugin.MuxBroker) (interface{}, error) {
+	return &RetentionServiceRPCServer{Impl: p.Impl}, nil
 }
 
-func (ConservServicePlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
-	return &ConservServiceRPC{client: c}, nil
+func (RetentionServicePlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
+	return &RetentionServiceRPC{client: c}, nil
 }

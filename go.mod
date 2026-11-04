@@ -1,4 +1,4 @@
-module github.com/Franz329/conservservice_interface
+module github.com/Franz329/retentionservice_interface
 
 go 1.27.2
 
