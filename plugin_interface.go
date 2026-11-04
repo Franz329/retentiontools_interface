@@ -1,4 +1,4 @@
-package retentionservice
+package retentiontools
 
 import (
 	"net/rpc"
@@ -44,15 +44,15 @@ type SearchResponse struct {
 
 //interface
 
-type RetentionService interface {
+type RetentionTools interface {
 	Store(data StoreRequest) StoreResponse
 	Status(request StatusRequest) StatusResponse
 	Search(query SearchRequest) SearchResponse
 }
 
-type RetentionServiceRPC struct{ client *rpc.Client }
+type RetentionToolsRPC struct{ client *rpc.Client }
 
-func (e *RetentionServiceRPC) Store(data StoreRequest) StoreResponse {
+func (e *RetentionToolsRPC) Store(data StoreRequest) StoreResponse {
 	var response StoreResponse
 
 	err := e.client.Call("Plugin.Store", data, &response)
@@ -63,7 +63,7 @@ func (e *RetentionServiceRPC) Store(data StoreRequest) StoreResponse {
 	return response
 }
 
-func (e *RetentionServiceRPC) Status(request StatusRequest) StatusResponse {
+func (e *RetentionToolsRPC) Status(request StatusRequest) StatusResponse {
 	var response StatusResponse
 
 	err := e.client.Call("Plugin.Status", request, &response)
@@ -74,7 +74,7 @@ func (e *RetentionServiceRPC) Status(request StatusRequest) StatusResponse {
 	return response
 }
 
-func (e *RetentionServiceRPC) Search(query SearchRequest) SearchResponse {
+func (e *RetentionToolsRPC) Search(query SearchRequest) SearchResponse {
 	var response SearchResponse
 
 	err := e.client.Call("Plugin.Search", query, &response)
@@ -85,33 +85,33 @@ func (e *RetentionServiceRPC) Search(query SearchRequest) SearchResponse {
 	return response
 }
 
-type RetentionServiceRPCServer struct {
-	Impl RetentionService
+type RetentionToolsRPCServer struct {
+	Impl RetentionTools
 }
 
-func (s *RetentionServiceRPCServer) Store(data StoreRequest, response *StoreResponse) error {
+func (s *RetentionToolsRPCServer) Store(data StoreRequest, response *StoreResponse) error {
 	*response = s.Impl.Store(data)
 	return nil
 }
 
-func (s *RetentionServiceRPCServer) Status(request StatusRequest, response *StatusResponse) error {
+func (s *RetentionToolsRPCServer) Status(request StatusRequest, response *StatusResponse) error {
 	*response = s.Impl.Status(request)
 	return nil
 }
 
-func (s *RetentionServiceRPCServer) Search(query SearchRequest, response *SearchResponse) error {
+func (s *RetentionToolsRPCServer) Search(query SearchRequest, response *SearchResponse) error {
 	*response = s.Impl.Search(query)
 	return nil
 }
 
-type RetentionServicePlugin struct {
-	Impl RetentionService
+type RetentionToolsPlugin struct {
+	Impl RetentionTools
 }
 
-func (p *RetentionServicePlugin) Server(*plugin.MuxBroker) (interface{}, error) {
-	return &RetentionServiceRPCServer{Impl: p.Impl}, nil
+func (p *RetentionToolsPlugin) Server(*plugin.MuxBroker) (interface{}, error) {
+	return &RetentionToolsRPCServer{Impl: p.Impl}, nil
 }
 
-func (RetentionServicePlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
-	return &RetentionServiceRPC{client: c}, nil
+func (RetentionToolsPlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
+	return &RetentionToolsRPC{client: c}, nil
 }
