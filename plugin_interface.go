@@ -42,7 +42,7 @@ type SearchResponse struct {
 	Error   int
 }
 
-//interface
+//interface and methods
 
 type RetentionTools interface {
 	Store(data StoreRequest) StoreResponse
@@ -85,6 +85,8 @@ func (e *RetentionToolsRPC) Search(query SearchRequest) SearchResponse {
 	return response
 }
 
+//RPC Server
+
 type RetentionToolsRPCServer struct {
 	Impl RetentionTools
 }
@@ -103,6 +105,8 @@ func (s *RetentionToolsRPCServer) Search(query SearchRequest, response *SearchRe
 	*response = s.Impl.Search(query)
 	return nil
 }
+
+//Plugin Implementation
 
 type RetentionToolsPlugin struct {
 	Impl RetentionTools
